@@ -1,0 +1,30 @@
+#addnew-body {
+  width: 464px;
+}
+
+#addnew-container {
+  display: flex;
+  justify-content: space-evenly;
+  width: 400px;
+  height: auto;
+  padding: 3rem 0 2rem 1rem;
+}
+
+.buttons-container {
+  display: flex;
+  justify-content: flex-end;
+}
+
+#title-label {
+  margin-right: 6px;
+}
+
+#email-label {
+  margin-right: 10px;
+}
+
+#add-new-user {
+  margin-top: 100px;
+  border: 1px solid black;
+  height: 209.17px;
+}
