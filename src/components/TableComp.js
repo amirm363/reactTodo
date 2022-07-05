@@ -8,6 +8,7 @@ import PostsComp from "./PostsComp";
 import { Button } from "@material-ui/core";
 import AddNewUser from "./AddNewUser";
 
+// function to merge arrays
 const mergeArrs = (arr1, arr2) => {
   let arr2Updated = [...arr2];
   arr1.forEach((user) => {
@@ -20,21 +21,8 @@ const mergeArrs = (arr1, arr2) => {
 
   return arr2Updated;
 };
-const mergeData = (arr1, arr2) => {
-  let arr2Updated = [...arr2];
-  arr1.forEach((user) => {
-    arr2Updated.forEach((user2, index) => {
-      if (user2.user.id === user.user.id) {
-        arr2Updated[index].moreData = user.moreData;
-      } else {
-        arr2Updated[index].moreData = false;
-      }
-    });
-  });
 
-  return arr2Updated;
-};
-
+// Function to initialize moreData and set it to false in all the array objects.
 const initMoreData = (arr) => {
   let updatedUsers = arr.map((user) => {
     return { ...user, moreData: false };
@@ -54,14 +42,15 @@ const TableComp = () => {
     addNewUser: false,
   });
 
+  // Function that updates user data
   const updateUser = (userData) => {
     let index = usersData.findIndex((user) => user.user.id === userData.id);
     let tempArr = usersData;
     tempArr[index] = userData;
-
     setUsersData([...tempArr]);
   };
 
+  // Functions that allows to remove a user from the usersData state.
   const deleteUser = (userId) => {
     let index = usersData.findIndex((user) => user.user.id === userId);
 
@@ -70,6 +59,8 @@ const TableComp = () => {
     setUsersData([...tempArr]);
   };
 
+  /* useEffect that fetches all the data needed to be shown, puts it inside "usersData" state
+  and allow it to be rendered on the screen when the DOM loads up */
   useEffect(() => {
     const getUsers = async () => {
       let users = await utils.getUsers();
@@ -89,6 +80,8 @@ const TableComp = () => {
     getUsers();
   }, []);
 
+  /* Function that checks if there been a search by the client, sets the flag to the state it need to be
+  and gets the searched results into a new array to render*/
   const beenSearched = (searchedVal) => {
     if (searchedVal === "") {
       setSearchedValue({ ...searchedValue, didSearch: false });
@@ -107,6 +100,7 @@ const TableComp = () => {
     }
   };
 
+  // Function that changes the completed attribute to true if the button attached to it is pressed
   const markCompleted = (userId, todoId) => {
     let userIndex = usersData.findIndex((user) => user.user.id === userId);
     let index = usersData[userIndex].todos.findIndex(
@@ -117,6 +111,8 @@ const TableComp = () => {
     setUsersData([...usersUpdated]);
   };
 
+  /* This function finds a specific user from the usersData array or from the searchedValue array,
+  than puts all of its todos, and posts inside a state called popUp, and changes the flag so it will be shown on the screen*/
   const getId = (userId) => {
     let user = {};
     searchedValue.didSearch
@@ -132,6 +128,7 @@ const TableComp = () => {
     });
   };
 
+  // Function that adds a new "post" to a specific user posts array
   const addPost = (post, userId) => {
     let newData = usersData;
     let newPost = {
@@ -143,6 +140,8 @@ const TableComp = () => {
 
     setUsersData([...newData]);
   };
+
+  // Function that adds a new "todo" to a specific user todos array
   const addTodo = (todo, userId) => {
     let newData = usersData;
 
@@ -156,15 +155,21 @@ const TableComp = () => {
     setUsersData([...newData]);
   };
 
+  /* This function allows the client to show all the users todos and posts on the screen,
+  add new ones and mark as completed uncompleted tasks*/
   const moreData = (userId) => {
+    // if there been no search, it will work on the usersData array
     if (!searchedValue.didSearch) {
       let user = usersData.find((user) => user.user.id === userId);
+      // if the user moreData flag is true and the user is highlighted
       if (user.moreData) {
         let updatedUsers = initMoreData(usersData);
 
         getId(userId);
         setUsersData([...updatedUsers]);
-      } else {
+      }
+      // if its the first time the client wants to view the user's data
+      else {
         let updatedUsers = initMoreData(usersData);
         updatedUsers.forEach((user, index) => {
           if (user.user.id === userId) {
@@ -176,9 +181,12 @@ const TableComp = () => {
         setUsersData([...updatedUsers]);
       }
     } else {
+      /* else if there been a search, 
+    the function will work on the new array created by the client searched values */
       let user = searchedValue.searchedArr.find(
         (user) => user.user.id === userId
       );
+      // if the user moreData flag is true and the user is highlighted
       if (user.moreData) {
         let updSearchedArr = initMoreData(searchedValue.searchedArr);
 
@@ -190,7 +198,12 @@ const TableComp = () => {
 
         let newUsersData = mergeArrs(updSearchedArr, usersData);
         setUsersData([...newUsersData]);
-      } else {
+      }
+      // if its the first time the client wants to view the user's data
+      else {
+        /* it will initialize both usersData and the searched array "moreData" flags
+        so when the client wants to go back and see all the users, there won't
+        be a chance that 2 users are highlighted*/
         let updSearchedArr = initMoreData(searchedValue.searchedArr);
         let originalArr = initMoreData(usersData);
         updSearchedArr.forEach((user, index) => {
@@ -210,6 +223,7 @@ const TableComp = () => {
     }
   };
 
+  // Adds a new user to the original array
   const addUser = (user) => {
     let newUser = {
       user: {
