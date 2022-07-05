@@ -8,6 +8,40 @@ import PostsComp from "./PostsComp";
 import { Button } from "@material-ui/core";
 import AddNewUser from "./AddNewUser";
 
+const mergeArrs = (arr1, arr2) => {
+  let arr2Updated = [...arr2];
+  arr1.forEach((user) => {
+    arr2Updated.forEach((user2, index) => {
+      if (user2.user.id === user.user.id) {
+        arr2Updated[index] = user;
+      }
+    });
+  });
+
+  return arr2Updated;
+};
+const mergeData = (arr1, arr2) => {
+  let arr2Updated = [...arr2];
+  arr1.forEach((user) => {
+    arr2Updated.forEach((user2, index) => {
+      if (user2.user.id === user.user.id) {
+        arr2Updated[index].moreData = user.moreData;
+      } else {
+        arr2Updated[index].moreData = false;
+      }
+    });
+  });
+
+  return arr2Updated;
+};
+
+const initMoreData = (arr) => {
+  let updatedUsers = arr.map((user) => {
+    return { ...user, moreData: false };
+  });
+  return updatedUsers;
+};
+
 const TableComp = () => {
   const [usersData, setUsersData] = useState([]);
   const [searchedValue, setSearchedValue] = useState({
@@ -24,13 +58,13 @@ const TableComp = () => {
     let index = usersData.findIndex((user) => user.user.id === userData.id);
     let tempArr = usersData;
     tempArr[index] = userData;
-    console.log(tempArr[index]);
+
     setUsersData([...tempArr]);
   };
 
   const deleteUser = (userId) => {
     let index = usersData.findIndex((user) => user.user.id === userId);
-    console.log(index);
+
     let tempArr = usersData;
     tempArr.splice(index, 1);
     setUsersData([...tempArr]);
@@ -47,6 +81,7 @@ const TableComp = () => {
           user,
           todos: todos.data.filter((todo) => todo.userId === user.id),
           posts: posts.data.filter((post) => post.userId === user.id),
+          moreData: false,
         };
       });
       setUsersData([...tempArr]);
@@ -55,16 +90,21 @@ const TableComp = () => {
   }, []);
 
   const beenSearched = (searchedVal) => {
-    let tempArr = usersData.filter((user) => {
-      if (
-        user.user.name.includes(searchedVal) ||
-        user.user.email.includes(searchedVal)
-      ) {
-        return user;
-      } else return null;
-    });
-    if (tempArr)
-      setSearchedValue({ searchedArr: [...tempArr], didSearch: true });
+    if (searchedVal === "") {
+      setSearchedValue({ ...searchedValue, didSearch: false });
+    } else {
+      let tempArr = usersData.filter((user) => {
+        if (
+          user.user.name.includes(searchedVal) ||
+          user.user.email.includes(searchedVal)
+        ) {
+          return user;
+        } else return null;
+      });
+
+      if (tempArr)
+        setSearchedValue({ searchedArr: [...tempArr], didSearch: true });
+    }
   };
 
   const markCompleted = (userId, todoId) => {
@@ -78,11 +118,17 @@ const TableComp = () => {
   };
 
   const getId = (userId) => {
-    let user = usersData.find((user) => user.user.id === userId);
+    let user = {};
+    searchedValue.didSearch
+      ? (user = searchedValue.searchedArr.find(
+          (user) => user.user.id === userId
+        ))
+      : (user = usersData.find((user) => user.user.id === userId));
 
     setPopUp({
+      ...popUp,
       data: { todos: user.todos, posts: user.posts },
-      state: !popUp.state,
+      state: !user.moreData,
     });
   };
 
@@ -94,7 +140,7 @@ const TableComp = () => {
       ...post,
     };
     newData[userId - 1].posts.push(newPost);
-    console.log(newData);
+
     setUsersData([...newData]);
   };
   const addTodo = (todo, userId) => {
@@ -106,12 +152,65 @@ const TableComp = () => {
       ...todo,
     };
     newData[userId - 1].todos.push(newTodo);
-    console.log(newData);
+
     setUsersData([...newData]);
   };
 
+  const moreData = (userId) => {
+    if (!searchedValue.didSearch) {
+      let user = usersData.find((user) => user.user.id === userId);
+      if (user.moreData) {
+        let updatedUsers = initMoreData(usersData);
+
+        getId(userId);
+        setUsersData([...updatedUsers]);
+      } else {
+        let updatedUsers = initMoreData(usersData);
+        updatedUsers.forEach((user, index) => {
+          if (user.user.id === userId) {
+            updatedUsers[index].moreData = !user.moreData;
+          }
+        });
+
+        getId(userId);
+        setUsersData([...updatedUsers]);
+      }
+    } else {
+      let user = searchedValue.searchedArr.find(
+        (user) => user.user.id === userId
+      );
+      if (user.moreData) {
+        let updSearchedArr = initMoreData(searchedValue.searchedArr);
+
+        getId(userId);
+        setSearchedValue({
+          ...searchedValue,
+          searchedArr: [...updSearchedArr],
+        });
+
+        let newUsersData = mergeArrs(updSearchedArr, usersData);
+        setUsersData([...newUsersData]);
+      } else {
+        let updSearchedArr = initMoreData(searchedValue.searchedArr);
+        let originalArr = initMoreData(usersData);
+        updSearchedArr.forEach((user, index) => {
+          if (user.user.id === userId) {
+            updSearchedArr[index].moreData = !user.moreData;
+          }
+        });
+
+        getId(userId);
+        setSearchedValue({
+          ...searchedValue,
+          searchedArr: [...updSearchedArr],
+        });
+        let newUsersData = mergeArrs(updSearchedArr, originalArr);
+        setUsersData([...newUsersData]);
+      }
+    }
+  };
+
   const addUser = (user) => {
-    console.log(usersData[usersData.length - 1].todos);
     let newUser = {
       user: {
         id: usersData.length + 1,
@@ -147,7 +246,7 @@ const TableComp = () => {
     };
     let newUsersData = usersData;
     newUsersData.push(newUser);
-    console.log(newUsersData);
+
     setUsersData([...newUsersData]);
   };
   return (
@@ -176,6 +275,7 @@ const TableComp = () => {
                     popUp={popUp}
                     setPopUp={setPopUp}
                     getId={getId}
+                    moreData={moreData}
                     key={user.user.id}
                   />
                 );
@@ -189,6 +289,7 @@ const TableComp = () => {
                     popUp={popUp}
                     setPopUp={setPopUp}
                     getId={getId}
+                    moreData={moreData}
                     key={user.user.id}
                   />
                 );

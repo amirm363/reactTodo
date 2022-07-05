@@ -16,7 +16,7 @@ const CardComp = (props) => {
   const [booleans, setBooleans] = useState({
     completed: true,
     otherData: false,
-    idClick: false,
+    // idClick: props.user.moreData,
   });
 
   useEffect(() => {
@@ -33,27 +33,20 @@ const CardComp = (props) => {
     ifCompleted();
   }, [props]);
 
-  // useEffect(() => {
-  //   props.setPopUp({ ...props.popUp, state: !booleans.idClick });
-  // }, [booleans.idClick]);
   return (
     <Card
       id="card"
       style={{
         borderColor: booleans.completed ? "green" : "red",
-        backgroundColor: booleans.idClick ? "orange" : "white",
+        backgroundColor: props.user.moreData ? "orange" : "white",
       }}
     >
       <div>
         <label
           className="Labels"
           htmlFor="id"
-          onClick={(e) => {
-            props.setPopUp({ ...props.popUp, state: false });
-            setBooleans({
-              ...booleans,
-              idClick: !booleans.idClick,
-            });
+          onClick={() => {
+            props.moreData(user.user.id);
             props.getId(user.user.id);
           }}
         >
