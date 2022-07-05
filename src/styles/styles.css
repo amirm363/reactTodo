@@ -56,9 +56,9 @@
   margin-top: 10px;
   display: flex;
   /* flex-wrap: no-wrap; */
-  justify-content: start;
+  justify-content: flex-start;
 }
 #buttons-container2 {
   display: flex;
-  justify-content: end;
+  justify-content: flex-end;
 }

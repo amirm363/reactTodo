@@ -1,4 +1,4 @@
-import { Button, TextField } from "@material-ui/core";
+import { TextField } from "@material-ui/core";
 import React from "react";
 
 const SearchComp = (props) => {
